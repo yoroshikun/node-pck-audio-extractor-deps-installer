@@ -12,15 +12,15 @@ const mkdirp = require('mkdirp');
 const commandExists = require('command-exists');
 const util = require('util');
 const exec = util.promisify(require('child_process').execFile);
+const rimraf = util.promisify(require('rimraf')); 
 const { downloadAndExtract } = require('./helpers/downloadAndExtract');
-const { rmraf } = require('./helpers/rmraf');
 
 const platform = os.platform();
 
 const setup = async () => {
   try {
     console.info('Downloading and extracting Universal BMS Scripts...');
-    await mkdirp('temp');
+    await mkdirp(path.join(__dirname, 'temp'));
     await downloadAndExtract(
       '/bms/quickbms_scripts.zip',
       'temp/quickbms_scripts.zip',
@@ -38,7 +38,7 @@ const setup = async () => {
         );
         console.info('Downloading and extracting VGMStream CLI...');
         await downloadAndExtract(
-          'https://github.com/losnoco/vgmstream/releases/download/r1050-3312-g70d20924/vgmstream_cli.zip',
+          'https://vgmstream-builds.s3-us-west-1.amazonaws.com/70d20924341e1df3e4f76b4c4a6e414981950f8e/windows/test.zip',
           'temp/vgmstream_cli.zip',
           'libs/vgmstream',
         );
@@ -57,17 +57,25 @@ const setup = async () => {
           true,
         );
 
+        console.info('Cleaning up vgmstream install...');
+        await fs.renameSync(
+          path.join(__dirname, 'libs', 'vgmstream', 'test.exe'),
+          path.join(__dirname, 'libs', 'vgmstream', 'vgmstream_cli.exe'),
+        );
+
         console.info('Cleaning up ffmpeg install...');
         const ffmpegLatestDirName = fs
-          .readdirSync('ffmpeg')
+          .readdirSync(path.resolve(__dirname, 'libs', 'ffmpeg'))
           .filter((fileName) => fileName.includes('ffmpeg'))[0];
 
-        await rmraf(path.join('ffmpeg', 'bin'));
+        await rimraf(path.join(__dirname, 'libs', 'ffmpeg', 'bin'));
         fs.renameSync(
-          path.join(__dirname, './ffmpeg', ffmpegLatestDirName, 'bin'),
-          path.join(__dirname, './ffmpeg', 'bin'),
+          path.join(__dirname, 'libs', 'ffmpeg', ffmpegLatestDirName, 'bin'),
+          path.join(__dirname, 'libs', 'ffmpeg', 'bin'),
         );
-        await rmraf(path.join('ffmpeg', ffmpegLatestDirName));
+        await rimraf(
+          path.join(__dirname, 'libs', 'ffmpeg', ffmpegLatestDirName),
+        );
         break;
       case 'darwin':
         console.info('Checking if brew and required commands are installed...');
@@ -128,7 +136,7 @@ const setup = async () => {
         console.error('The current platform is not supported');
         break;
     }
-    await rmraf('temp');
+    await rimraf(path.join(__dirname, 'temp'));
     console.info('All deps installed! Get Extracting :)');
   } catch (err) {
     console.error(err.message);

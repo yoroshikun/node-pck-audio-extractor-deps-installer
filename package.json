@@ -8,6 +8,7 @@
     "command-exists": "^1.2.9",
     "follow-redirects": "^1.13.0",
     "mkdirp": "^1.0.4",
+    "rimraf": "^3.0.2",
     "yauzl": "^2.10.0"
   }
 }
