@@ -14,3 +14,9 @@ Generally you will not need to manually download this repo, however if you do yo
 yarn install
 node setup.js
 ```
+
+## Thanks to
+
+- [vgsstream](https://github.com/losnoco/vgmstream)
+- [ffmpeg](https://ffmpeg.org/)
+- [quickbms](https://aluigi.altervista.org/quickbms.htm)
