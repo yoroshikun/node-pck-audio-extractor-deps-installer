@@ -14,6 +14,7 @@ const util = require('util');
 const exec = util.promisify(require('child_process').execFile);
 const rimraf = util.promisify(require('rimraf')); 
 const { downloadAndExtract } = require('./helpers/downloadAndExtract');
+const { recursiveMove } = require('./helpers/recursiveMove');
 
 const platform = os.platform();
 
@@ -32,8 +33,8 @@ const setup = async () => {
       case 'win32':
         console.info('Downloading and extracting VGMStream Deps...');
         await downloadAndExtract(
-          'https://f.losno.co/vgmstream-win32-deps.zip',
-          'temp/vgmstream-win32-deps.zip',
+          'https://github.com/vgmstream/vgmstream/archive/refs/heads/master.zip',
+          'temp/vgmstream-archive.zip',
           'libs/vgmstream',
         );
         console.info('Downloading and extracting VGMStream CLI...');
@@ -58,10 +59,15 @@ const setup = async () => {
         );
 
         console.info('Cleaning up vgmstream install...');
-        await fs.renameSync(
+        fs.renameSync(
           path.join(__dirname, 'libs', 'vgmstream', 'test.exe'),
           path.join(__dirname, 'libs', 'vgmstream', 'vgmstream_cli.exe'),
         );
+        recursiveMove(
+          path.join(__dirname, 'libs', 'vgmstream', 'vgmstream-master', 'ext_libs'),
+          path.join(__dirname, 'libs', 'vgmstream'),
+        );
+        await rimraf(path.join(__dirname, 'libs', 'vgmstream', 'vgmstream-master'));
 
         console.info('Cleaning up ffmpeg install...');
         const ffmpegLatestDirName = fs
